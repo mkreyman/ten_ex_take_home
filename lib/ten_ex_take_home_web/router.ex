@@ -18,6 +18,9 @@ defmodule TenExTakeHomeWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
+
+    live "/characters", CharacterLive.Index, :index
+    live "/characters/:id", CharacterLive.Show, :show
   end
 
   # Other scopes may use custom stacks.

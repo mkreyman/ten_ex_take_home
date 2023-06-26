@@ -3,6 +3,8 @@ alias TenExTakeHome.Marvel.API.{
   Characters
 }
 
+alias TenExTakeHome.Marvel
+alias TenExTakeHome.Marvel.Character
 alias TenExTakeHome.Repo
 alias TenExTakeHomeWeb.Router.Helpers, as: Routes
 

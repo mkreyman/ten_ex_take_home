@@ -1,0 +1,22 @@
+<.header>
+  Character <%= @character.id %>
+  <:subtitle>This is a character record from your database.</:subtitle>
+</.header>
+
+<.list>
+  <:item title="Name"><%= @character.name %></:item>
+  <:item title="Description"><%= @character.description %></:item>
+</.list>
+
+<.back navigate={~p"/characters"}>Back to characters</.back>
+
+<.modal :if={@live_action == :edit} id="character-modal" show on_cancel={JS.patch(~p"/characters/#{@character}")}>
+  <.live_component
+    module={TenExTakeHomeWeb.CharacterLive.FormComponent}
+    id={@character.id}
+    title={@page_title}
+    action={@live_action}
+    character={@character}
+    patch={~p"/characters/#{@character}"}
+  />
+</.modal>

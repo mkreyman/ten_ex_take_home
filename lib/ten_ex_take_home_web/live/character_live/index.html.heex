@@ -1,0 +1,33 @@
+<.header>
+  Listing Characters
+  <:actions>
+    <.link patch={~p"/characters/new"}>
+      <.button>New Character</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.table
+  id="characters"
+  rows={@streams.characters}
+  row_click={fn {_id, character} -> JS.navigate(~p"/characters/#{character}") end}
+>
+  <:col :let={{_id, character}} label="Name"><%= character.name %></:col>
+  <:col :let={{_id, character}} label="Description"><%= character.description %></:col>
+  <:action :let={{_id, character}}>
+    <div class="sr-only">
+      <.link navigate={~p"/characters/#{character}"}>Show</.link>
+    </div>
+  </:action>
+</.table>
+
+<.modal :if={@live_action in [:new, :edit]} id="character-modal" show on_cancel={JS.patch(~p"/characters")}>
+  <.live_component
+    module={TenExTakeHomeWeb.CharacterLive.FormComponent}
+    id={@character.id || :new}
+    title={@page_title}
+    action={@live_action}
+    character={@character}
+    patch={~p"/characters"}
+  />
+</.modal>
