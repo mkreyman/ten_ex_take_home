@@ -3,8 +3,9 @@ import Config
 # Configure your database
 config :ten_ex_take_home, TenExTakeHome.Repo,
   username: "postgres",
-  password: "postgres",
+  password: "Cran8Gat8",
   hostname: "localhost",
+  port: 5433,
   database: "ten_ex_take_home_dev",
   stacktrace: true,
   show_sensitive_data_on_connection_error: true,
