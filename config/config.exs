@@ -59,6 +59,11 @@ config :logger, :console,
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
+# Marvel API configuration
+config :ten_ex_take_home, :marvel_api,
+  http_client: HTTPoison,
+  base_url: "https://gateway.marvel.com/v1/public"
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"

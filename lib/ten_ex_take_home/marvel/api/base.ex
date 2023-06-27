@@ -1,6 +1,8 @@
 defmodule TenExTakeHome.Marvel.API.Base do
   @moduledoc false
 
+  @base_url "http://gateway.marvel.com/v1/public"
+
   defmacro __using__(opts) do
     quote do
       alias TenExTakeHome.Marvel.API
@@ -83,20 +85,10 @@ defmodule TenExTakeHome.Marvel.API.Base do
     end
   end
 
-  defp public_key() do
-    Application.get_env(:marvel, :public_key, System.get_env("MARVEL_PUBLIC_KEY"))
-  end
-
-  defp private_key() do
-    Application.get_env(:marvel, :private_key, System.get_env("MARVEL_PRIVATE_KEY"))
-  end
-
-  defp timestamp() do
-    Timex.to_unix(Timex.now())
-  end
-
-  def get(url, params) do
-    base_url = "http://gateway.marvel.com/v1/public"
+  def get(endpoint, params) do
+    config = default_config()
+    base_url = Keyword.get(config, :base_url, @base_url)
+    http_client = Keyword.get(config, :http_client)
 
     ts = timestamp()
     private_key = private_key()
@@ -110,16 +102,29 @@ defmodule TenExTakeHome.Marvel.API.Base do
       Map.merge(params, %{ts: ts, apikey: public_key, hash: hash})
       |> URI.encode_query()
 
-    case HTTPoison.get("#{base_url}/#{url}?#{params}") do
-      {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
+    case http_client.get("#{base_url}/#{endpoint}?#{params}") do
+      {:ok, %{status_code: 200, body: body}} ->
         {:ok, Jason.decode!(body)}
 
-      {:ok, %HTTPoison.Response{status_code: status_code, body: body}}
-      when status_code in 401..409 ->
+      {:ok, %{status_code: status_code, body: body}} when status_code in 401..409 ->
         {:error, Jason.decode!(body)}
 
-      {:error, %HTTPoison.Error{reason: reason}} ->
+      {:error, %{reason: reason}} ->
         {:error, %{message: reason}}
     end
   end
+
+  defp public_key() do
+    Application.get_env(:marvel, :public_key, System.get_env("MARVEL_PUBLIC_KEY"))
+  end
+
+  defp private_key() do
+    Application.get_env(:marvel, :private_key, System.get_env("MARVEL_PRIVATE_KEY"))
+  end
+
+  defp timestamp() do
+    Timex.to_unix(Timex.now())
+  end
+
+  defp default_config(), do: Application.get_env(:ten_ex_take_home, :marvel_api)
 end
