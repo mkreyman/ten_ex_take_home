@@ -2,6 +2,8 @@ defmodule TenExTakeHome.Marvel.Character do
   use Ecto.Schema
   import Ecto.Changeset
 
+  @attrs ~w(name description)a
+
   schema "characters" do
     field :description, :string
     field :name, :string
@@ -12,8 +14,8 @@ defmodule TenExTakeHome.Marvel.Character do
   @doc false
   def changeset(character, attrs) do
     character
-    |> cast(attrs, [:name, :description])
-    |> validate_required([:name, :description])
+    |> cast(attrs, @attrs)
+    |> validate_required(@attrs)
   end
 
   @doc false

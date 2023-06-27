@@ -5,6 +5,9 @@ defmodule TenExTakeHome.Marvel.CharactersCache do
 
   alias TenExTakeHome.Marvel.API.Characters, as: API
   alias TenExTakeHome.Marvel.Character
+  alias TenExTakeHome.Analytics.ApiCalls
+
+  @endpoint "/v1/public/characters"
 
   def lookup(character_id) do
     case get(character_id) do
@@ -13,6 +16,8 @@ defmodule TenExTakeHome.Marvel.CharactersCache do
 
       _ ->
         with {:ok, response} <- API.get(character_id) do
+          log_api_call(%{endpoint: @endpoint, code: response["code"], status: response["status"]})
+
           attrs =
             response["data"]["results"]
             |> List.first()
@@ -27,13 +32,15 @@ defmodule TenExTakeHome.Marvel.CharactersCache do
     end
   end
 
-  def lookup_all() do
+  def lookup_all(params) do
     case get_all() do
       {:ok, cache} ->
         {:ok, parse_cache_results(cache)}
 
       _ ->
-        with {:ok, response} <- API.list() do
+        with {:ok, response} <- API.list(params) do
+          log_api_call(%{endpoint: @endpoint, code: response["code"], status: response["status"]})
+
           results = response["data"]["results"]
           characters = Enum.map(results, &Character.create_instance/1)
           cache_characters(characters)
@@ -55,5 +62,9 @@ defmodule TenExTakeHome.Marvel.CharactersCache do
     Enum.map(cache_results, fn {_, {:ok, %TenExTakeHome.Marvel.Character{} = character}, _} ->
       character
     end)
+  end
+
+  defp log_api_call(attrs) do
+    Task.start(fn -> ApiCalls.log_api_call(attrs) end)
   end
 end

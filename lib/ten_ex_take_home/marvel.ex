@@ -17,7 +17,9 @@ defmodule TenExTakeHome.Marvel do
 
   """
   def list_characters do
-    with {:ok, characters} <- CharactersCache.lookup_all() do
+    params = %{offset: 0, limit: 100}
+
+    with {:ok, characters} <- CharactersCache.lookup_all(params) do
       characters
     else
       _ ->
