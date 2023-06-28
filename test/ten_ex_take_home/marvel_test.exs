@@ -1,61 +1,61 @@
 defmodule TenExTakeHome.MarvelTest do
-  use TenExTakeHome.DataCase
+  use TenExTakeHome.DataCase, async: false
+
+  import Mox
+  import TenExTakeHome.MarvelFixtures
 
   alias TenExTakeHome.Marvel
+  alias TenExTakeHome.Marvel.CharactersCache, as: Cache
 
   describe "characters" do
-    alias TenExTakeHome.Marvel.Character
+    setup [:cache_cleanup, :create_character]
 
-    import TenExTakeHome.MarvelFixtures
-
-    @invalid_attrs %{description: nil, name: nil}
-
-    test "list_characters/0 returns all characters" do
-      character = character_fixture()
+    test "list_characters/0 returns all characters", %{character: character} do
       assert Marvel.list_characters() == [character]
     end
 
-    test "get_character!/1 returns the character with given id" do
-      character = character_fixture()
+    test "get_character!/1 returns the character with given id", %{character: character} do
       assert Marvel.get_character!(character.id) == character
     end
+  end
 
-    test "create_character/1 with valid data creates a character" do
-      valid_attrs = %{description: "some description", name: "some name"}
+  defp create_character(_) do
+    http_client = TenExTakeHome.HTTPClientMock
+    character = character_fixture()
 
-      assert {:ok, %Character{} = character} = Marvel.create_character(valid_attrs)
-      assert character.description == "some description"
-      assert character.name == "some name"
-    end
+    resp =
+      character
+      |> success()
+      |> Jason.encode!()
 
-    test "create_character/1 with invalid data returns error changeset" do
-      assert {:error, %Ecto.Changeset{}} = Marvel.create_character(@invalid_attrs)
-    end
+    expect(
+      http_client,
+      :get,
+      2,
+      fn _url ->
+        {:ok, %HTTPoison.Response{body: resp, status_code: 200}}
+      end
+    )
 
-    test "update_character/2 with valid data updates the character" do
-      character = character_fixture()
-      update_attrs = %{description: "some updated description", name: "some updated name"}
+    %{character: character}
+  end
 
-      assert {:ok, %Character{} = character} = Marvel.update_character(character, update_attrs)
-      assert character.description == "some updated description"
-      assert character.name == "some updated name"
-    end
+  defp success(character) do
+    %{
+      "data" => %{
+        "results" => [
+          %{
+            "id" => character.id,
+            "name" => character.name,
+            "description" => character.description
+          }
+        ]
+      }
+    }
+  end
 
-    test "update_character/2 with invalid data returns error changeset" do
-      character = character_fixture()
-      assert {:error, %Ecto.Changeset{}} = Marvel.update_character(character, @invalid_attrs)
-      assert character == Marvel.get_character!(character.id)
-    end
-
-    test "delete_character/1 deletes the character" do
-      character = character_fixture()
-      assert {:ok, %Character{}} = Marvel.delete_character(character)
-      assert_raise Ecto.NoResultsError, fn -> Marvel.get_character!(character.id) end
-    end
-
-    test "change_character/1 returns a character changeset" do
-      character = character_fixture()
-      assert %Ecto.Changeset{} = Marvel.change_character(character)
-    end
+  defp cache_cleanup(_) do
+    Cache.reset()
+    :ok
   end
 end

@@ -10,8 +10,9 @@ defmodule TenExTakeHome.MarvelFixtures do
   def character_fixture(attrs \\ %{}) do
     attrs
     |> Enum.into(%{
-      description: "some description",
-      name: "some name"
+      "id" => :rand.uniform(1000),
+      "name" => Faker.Superhero.name(),
+      "description" => Faker.Superhero.descriptor()
     })
     |> TenExTakeHome.Marvel.Character.create_instance()
   end

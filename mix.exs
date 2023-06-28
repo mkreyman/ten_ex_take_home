@@ -52,7 +52,8 @@ defmodule TenExTakeHome.MixProject do
       {:plug_cowboy, "~> 2.5"},
       {:httpoison, "~> 2.1"},
       {:timex, "~> 3.7"},
-      {:mox, "~> 1.0", only: :test}
+      {:mox, "~> 1.0", only: :test},
+      {:faker, "~> 0.17", only: :test}
     ]
   end
 
